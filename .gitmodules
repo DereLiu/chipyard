@@ -72,7 +72,7 @@
 	url = https://github.com/firesim/DRAMSim2.git
 [submodule "generators/nvdla"]
 	path = generators/nvdla
-	url = https://github.com/ucb-bar/nvdla-wrapper.git
+	url = git@github.com:DereLiu/nvdla-wrapper.git
 [submodule "software/nvdla-workload"]
 	path = software/nvdla-workload
 	url = https://github.com/ucb-bar/nvdla-workload.git
