@@ -29,7 +29,7 @@ class SysClock2VCU118ShellPlacer(shell: VCU118ShellBasicOverlays, val shellInput
 {
     def place(designInput: ClockInputDesignInput) = new SysClock2VCU118PlacedOverlay(shell, valName.name, designInput, shellInput)
 }
-
+//custom ddrsize
 case object VCU118DDR2Size extends Field[BigInt](0x40000000L * 2) // 2GB
 class DDR2VCU118PlacedOverlay(val shell: VCU118FPGATestHarness, name: String, val designInput: DDRDesignInput, val shellInput: DDRShellInput)
   extends DDRPlacedOverlay[XilinxVCU118MIGPads](name, designInput, shellInput)

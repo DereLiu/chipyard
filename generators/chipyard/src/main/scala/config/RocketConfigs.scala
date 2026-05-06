@@ -21,16 +21,6 @@ class TinyRocketConfig extends Config(
   new freechips.rocketchip.subsystem.With1TinyCore ++             // single tiny rocket-core
   new chipyard.config.AbstractConfig)
 
-class MempressRocketConfig extends Config(
-  new mempress.WithMemPress ++                                    // use Mempress (memory traffic generation) accelerator
-  new freechips.rocketchip.subsystem.WithNBanks(8) ++
-  new freechips.rocketchip.subsystem.WithInclusiveCache(nWays=16, capacityKB=2048) ++
-  new chipyard.config.WithExtMemIdBits(7) ++                      // use 7 bits for tl like request id
-  new freechips.rocketchip.subsystem.WithNMemoryChannels(4) ++
-  new chipyard.config.WithSystemBusWidth(128) ++
-  new freechips.rocketchip.subsystem.WithNBigCores(1) ++
-  new chipyard.config.AbstractConfig)
-
 // DOC include start: FFTRocketConfig
 class FFTRocketConfig extends Config(
   new fftgenerator.WithFFTGenerator(numPoints=8, width=16, decPt=8) ++ // add 8-point mmio fft at the default addr (0x2400) with 16bit fixed-point numbers.
@@ -195,11 +185,37 @@ class StreamingFIRRocketConfig extends Config (
 class SmallNVDLARocketConfig extends Config(
   new nvidia.blocks.dla.WithNVDLA("small") ++               // add a small NVDLA
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++
+  //new freechips.rocketchip.subsystem.WithExtMemSize((1 << 30) * 8L) ++ // 8 GB
   new chipyard.config.AbstractConfig)
 
 class LargeNVDLARocketConfig extends Config(
   new nvidia.blocks.dla.WithNVDLA("large", true) ++         // add a large NVDLA with synth. rams
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++
+  new chipyard.config.AbstractConfig)
+  
+//@lyq quadcore with small nvdla
+class SmallNVDLAQuadRocketConfig extends Config(
+  new nvidia.blocks.dla.WithNVDLA("small") ++               // add a small NVDLA
+  new freechips.rocketchip.subsystem.WithNBigCores(4) ++    // quad-core (4 RocketTiles)
+  new chipyard.config.AbstractConfig)
+
+//@lyq IOMMU + NVDLA config
+class SmallNVDLAIOMMURocketConfig extends Config(
+  //new nvidia.blocks.dla.WithNVDLAReservedMemory(0xC0000000L, 0x02000000L) ++ // reserve 32MB memory for NVDLA
+  // Expose the IOMMU device-translation slave so NVDLA DBB traffic flows through it
+  new zerodaylabs.blocks.iommu.WithIOMMUDevSlave(base = 0x50010000L, devAddrBits = 64) ++
+  new nvidia.blocks.dla.WithNVDLA("small") ++               // add a small NVDLA
+  new chipyard.harness.WithSimAXIMem ++                     // drive the master AXI4 memory with a SimAXIMem, a 1-cycle magic memory, instead of default SimDRAM
+  new freechips.rocketchip.subsystem.WithNBigCores(1) ++
+  new chipyard.config.AbstractConfig) 
+//@lyq IOMMU + NVDLA config with quadcore
+class SmallNVDLAIOMMUQuadRocketConfig extends Config(
+  //new nvidia.blocks.dla.WithNVDLAReservedMemory(0xC0000000L, 0x02000000L) ++ // reserve 32MB memory for NVDLA
+  // Expose the IOMMU device-translation slave so NVDLA DBB traffic flows through it
+  new zerodaylabs.blocks.iommu.WithIOMMUDevSlave(base = 0x50010000L, devAddrBits = 64) ++
+  new nvidia.blocks.dla.WithNVDLA("small") ++               // add a small NVDLA
+  new chipyard.harness.WithSimAXIMem ++                     // drive the master AXI4 memory with a SimAXIMem, a 1-cycle magic memory, instead of default SimDRAM
+  new freechips.rocketchip.subsystem.WithNBigCores(4) ++    // quad-core (4 RocketTiles)
   new chipyard.config.AbstractConfig)
 
 class MMIORocketConfig extends Config(

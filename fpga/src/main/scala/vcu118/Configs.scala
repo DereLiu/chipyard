@@ -38,6 +38,20 @@ class WithSystemModifications extends Config((site, here, up) => {
   case SerialTLKey => None // remove serialized tl port
 })
 
+//@lyq custom modification
+class WithSystemModificationsDDR8G extends Config((site, here, up) => {
+  case DTSTimebase => BigInt((1e6).toLong)
+  case BootROMLocated(x) => up(BootROMLocated(x), site).map { p =>
+    // invoke makefile for sdboot
+    val freqMHz = (site(DefaultClockFrequencyKey) * 1e6).toLong
+    val make = s"make -C fpga/src/main/resources/vcu118/sdboot PBUS_CLK=${freqMHz} bin"
+    require (make.! == 0, "Failed to build bootrom")
+    p.copy(hang = 0x10000, contentFileName = s"./fpga/src/main/resources/vcu118/sdboot/build/sdboot.bin")
+  }
+  case ExtMem => up(ExtMem, site).map(x => x.copy(master = x.master.copy(size = site(VCU118DDRSize)))) // set extmem to DDR size
+  case SerialTLKey => None // remove serialized tl port
+})
+
 // DOC include start: AbstractVCU118 and Rocket
 class WithVCU118Tweaks extends Config(
   // harness binders
@@ -56,6 +70,27 @@ class WithVCU118Tweaks extends Config(
   new freechips.rocketchip.subsystem.WithoutTLMonitors ++
   new freechips.rocketchip.subsystem.WithNMemoryChannels(1) ++
   new WithFPGAFrequency(100) // default 100MHz freq
+)
+
+//@lyq ddrsize
+class WithVCU118TweaksDDR8G extends Config(
+  // harness binders
+  new WithUART ++
+    new WithSPISDCard ++
+    new WithDDRMem ++
+    // io binders
+    new WithUARTIOPassthrough ++
+    new WithSPIIOPassthrough ++
+    new WithTLIOPassthrough ++
+    // other configuration
+    new WithDefaultPeripherals ++
+    new chipyard.config.WithTLBackingMemory ++ // use TL backing memory
+    new WithSystemModificationsDDR8G ++ // setup busses, use sdboot bootrom, setup ext. mem. size
+    new chipyard.config.WithNoDebug ++ // remove debug module
+
+    new freechips.rocketchip.subsystem.WithoutTLMonitors ++
+    new freechips.rocketchip.subsystem.WithNMemoryChannels(1) ++
+    new WithFPGAFrequency(100) // default 100MHz freq
 )
 
 class RocketVCU118Config extends Config(
@@ -77,3 +112,47 @@ class WithFPGAFreq25MHz extends WithFPGAFrequency(25)
 class WithFPGAFreq50MHz extends WithFPGAFrequency(50)
 class WithFPGAFreq75MHz extends WithFPGAFrequency(75)
 class WithFPGAFreq100MHz extends WithFPGAFrequency(100)
+
+//@lyq rocket + NVDLA config
+class RocketVCU118SmallNVDLAConfig extends Config(
+  new WithFPGAFrequency(50) ++
+  new WithVCU118Tweaks ++
+  new chipyard.SmallNVDLARocketConfig)
+
+class RocketVCU118LargeNVDLAConfig extends Config(
+  new WithVCU118Tweaks ++
+  new chipyard.LargeNVDLARocketConfig)
+
+//@lyq rocket + NVDLA DDR configure
+class QuadRocketSmallNVDLAConfig extends Config(
+  new WithFPGAFrequency(50) ++
+  new WithVCU118Tweaks ++
+  new chipyard.SmallNVDLAQuadRocketConfig)
+
+//@lyq rocket + IOMMU + NVDLA config
+class IOMMUVCU118SmallNVDLARocketConfig extends Config(
+  new WithFPGAFrequency(50) ++
+  new WithVCU118Tweaks ++
+  new chipyard.SmallNVDLAIOMMURocketConfig)
+
+//@lyq QuadRocket + IOMMU + NVDLA config
+class IOMMUVCU118SmallNVDLAQuadRocketConfig extends Config(
+  new WithFPGAFrequency(50) ++
+  new WithVCU118Tweaks ++
+  new chipyard.SmallNVDLAIOMMUQuadRocketConfig)
+  
+//@lyq CVA6 + NVDLA config
+class CVA6VCU118SmallNVDLAConfig extends Config(
+  new WithFPGAFrequency(50) ++
+  new WithVCU118Tweaks ++
+  new chipyard.SmallNVDLACVA6Config)
+
+//@lyq IOMMU + CVA6 + NVDLA config
+class IOMMUSmallNVDLACVA6Config extends Config(
+  new WithVCU118Tweaks ++
+  new chipyard.IOMMUSmallNVDLACVA6Config)
+
+//@lyq IOMMU + CVA6 + NVDLA config
+class IOMMUVCU118SmallNVDLACVA6Config extends Config(
+  new WithVCU118Tweaks ++
+  new chipyard.IOMMUSmallNVDLACVA6Config)
