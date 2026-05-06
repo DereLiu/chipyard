@@ -133,6 +133,6 @@
 [submodule "generators/mempress"]
 	path = generators/mempress
 	url = https://github.com/ucb-bar/mempress.git
-[submodule "generators/iommu/src/main/resources/vsrc"]
-	path = generators/iommu/src/main/resources/vsrc
-	url = https://github.com/DereLiu/riscv-iommu.git
+[submodule "generators/iommu"]
+	path = generators/iommu
+	url = git@github.com:DereLiu/iommu-wrapper.git

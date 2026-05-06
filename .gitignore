@@ -19,3 +19,5 @@ tags
 .conda-env/
 .#*
 first-clone-setup-fast-log
+generators/iommu/src/main/resources/vsrc_backup_before_submodule/
+generators/iommu/src/main/resources/vsrc_old/
