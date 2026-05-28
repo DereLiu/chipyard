@@ -56,3 +56,72 @@ fpga/src/main/scala/vcu118/Configs.scala
 
 README-Chipyard.md
   Original Chipyard README.
+```
+
+## Build
+
+Start from the IOMMU branch and initialize the submodules before building:
+
+```bash
+git checkout feature/iommu-submodule
+git submodule update --init --recursive
+```
+
+For FPGA evaluation on VCU118, use one of the IOMMU-enabled VCU118 configs.
+The single-core Rocket/NVDLA/IOMMU configuration is the default bring-up target:
+
+```bash
+cd fpga
+make SUB_PROJECT=vcu118 CONFIG=IOMMUVCU118SmallNVDLARocketConfig bitstream
+```
+
+Other available VCU118 IOMMU configurations include:
+
+```text
+IOMMUVCU118SmallNVDLAQuadRocketConfig
+IOMMUVCU118SmallNVDLACVA6Config
+```
+
+For Verilator elaboration or software simulation, use the Chipyard simulator
+flow with the matching Chipyard-level config:
+
+```bash
+cd sims/verilator
+make CONFIG=SmallNVDLAIOMMURocketConfig
+```
+
+## Using the IOMMU
+
+The IOMMU is integrated through `generators/iommu` as a SystemVerilog BlackBox.
+The `SmallNVDLAIOMMURocketConfig` and `SmallNVDLAIOMMUQuadRocketConfig`
+configs instantiate the IOMMU device-translation slave at `0x50010000` and
+route NVDLA DBB DMA traffic through it before requests reach memory.
+
+NVDLA remains configured through its normal MMIO path. Its DMA path is the part
+mediated by the IOMMU. The generated device tree binds the NVDLA master to the
+IOMMU using the `iommus` property, so Linux can associate NVDLA DMA with the
+RISC-V IOMMU driver and allocate IOVA mappings through the normal DMA/IOMMU
+stack.
+
+Bare-metal test programs are under `tests/`. They can be built with:
+
+```bash
+cd tests
+make
+```
+
+For simulation, pass a built bare-metal binary to the Verilator run target, for
+example:
+
+```bash
+cd sims/verilator
+make CONFIG=SmallNVDLAIOMMURocketConfig \
+  BINARY=../../tests/nvdla.riscv \
+  run-binary-fast
+```
+
+For Linux-based experiments, boot a workload with the IOMMU-enabled hardware
+configuration, confirm that the generated device tree contains the IOMMU node
+and the NVDLA `iommus` binding, and then run the NVDLA workload through the
+Linux DMA API path. IOMMU faults, mappings, and DMA translation behavior should
+be checked from the guest kernel logs and the IOMMU driver state.
