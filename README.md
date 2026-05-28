@@ -1,5 +1,26 @@
 ![CHIPYARD](https://github.com/ucb-bar/chipyard/raw/master/docs/_static/images/chipyard-logo-full.png)
 
+# Chipyard-IOMMU Platform
+
+This repository contains a Chipyard-based RISC-V heterogeneous SoC
+platform with an integrated RISC-V IOMMU and NVDLA accelerator. The
+platform was developed for evaluating IOMMU-enforced DMA isolation and
+TEE-oriented secure I/O on FPGA.
+
+## Project-specific Modifications
+
+The main project-specific changes include:
+
+- Chipyard-side configuration and wrapper code for instantiating the
+  RISC-V IOMMU.
+- AXI/TileLink integration logic for connecting the IOMMU to the
+  Chipyard memory system.
+- NVDLA-to-IOMMU DMA-path integration.
+- FPGA-oriented configurations for generating Rocket/NVDLA/IOMMU SoC
+  variants.
+- Integration of the ZeroDayLabs RISC-V IOMMU source under
+  `generators/iommu`.
+
 # Chipyard Framework [![Test](https://github.com/ucb-bar/chipyard/actions/workflows/chipyard-run-tests.yml/badge.svg)](https://github.com/ucb-bar/chipyard/actions)
 
 ## Quick Links
