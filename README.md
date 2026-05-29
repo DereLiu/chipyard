@@ -126,3 +126,4 @@ configuration, confirm that the generated device tree contains the IOMMU node
 and the NVDLA `iommus` binding, and then run the NVDLA workload through the
 Linux DMA API path. IOMMU faults, mappings, and DMA translation behavior should
 be checked from the guest kernel logs and the IOMMU driver state.
+The NVDLA workload should be kept on the Linux v6.15 environment mentioned in the paper.
