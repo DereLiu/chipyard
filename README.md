@@ -60,6 +60,7 @@ README-Chipyard.md
 
 ## Build
 
+We have confirmed execution of the built bitstream only on a VCU118 board.
 Start from the IOMMU branch and initialize the submodules before building:
 
 ```bash
